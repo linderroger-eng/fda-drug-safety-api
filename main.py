@@ -27,10 +27,19 @@ app.add_middleware(
 FDA_BASE = "https://api.fda.gov"
 
 async def fda_get(path: str, params: dict) -> dict:
-    """Make a request to openFDA API"""
+    """Make a request to openFDA API.
+    Builds URL manually to avoid httpx percent-encoding openFDA query operators
+    (+, :, AND, OR) which breaks the openFDA Lucene query parser.
+    """
+    # Build query string manually — do NOT use httpx params= which encodes + and :
+    qs_parts = []
+    for k, v in params.items():
+        qs_parts.append(f"{k}={v}")
+    url = f"{FDA_BASE}{path}?{'&'.join(qs_parts)}"
+
     async with httpx.AsyncClient(timeout=15.0) as client:
         try:
-            r = await client.get(f"{FDA_BASE}{path}", params=params)
+            r = await client.get(url)
             r.raise_for_status()
             return r.json()
         except httpx.HTTPStatusError as e:
