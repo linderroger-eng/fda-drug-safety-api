@@ -84,7 +84,7 @@ async def drug_search(
     Returns drug info including manufacturer, active ingredients, NDC codes.
     """
     data = await fda_get("/drug/label.json", {
-        "search": f"openfda.brand_name:{name}+openfda.generic_name:{name}",
+        "search": f"openfda.brand_name:{name}+OR+openfda.generic_name:{name}",
         "limit": limit
     })
     results = []
